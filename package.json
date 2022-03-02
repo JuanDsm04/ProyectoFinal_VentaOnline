@@ -1,0 +1,11 @@
+{
+  "name": "proyecto-final---venta-online",
+  "version": "1.0.0",
+  "description": "Proyecto Final Venta Online - Juan Diego Solís Martiínez",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Juan Solís",
+  "license": "ISC"
+}
