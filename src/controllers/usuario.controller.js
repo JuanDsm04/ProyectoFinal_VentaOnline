@@ -2,10 +2,9 @@ const Usuarios = require('../models/usuario.model');
 const bcrypt = require('bcrypt-nodejs')
 const jwt = require('../services/jwt');
 
-
 /* ADMINISTRADOR DEFAULT */
 function administradorDefault(){
-    Usuarios.find({usuario:'Admin'}, (err, administradorEncontrado)=>{
+    Usuarios.find({usuario:'ADMIN'}, (err, administradorEncontrado)=>{
         if(administradorEncontrado == 0){
             bcrypt.hash('123456', null, null, (err, passwordEncriptada)=>{
                 Usuarios.create({
