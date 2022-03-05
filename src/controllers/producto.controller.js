@@ -1,4 +1,5 @@
 const Producto = require('../models/producto.model');
+const Categoria = require('../models/categoria.model');
 const bcrypt = require('bcrypt-nodejs')
 const jwt = require('../services/jwt');
 
@@ -79,7 +80,55 @@ function visualizarProductos(req, res){
 
 
 /* EDITAR PRODUCTO */
+function editarProducto(req, res){
+    var idProd = req.params.idProducto;
+    var parametros = req.body;
 
+    if(req.user.rol != 'ROL_ADMINISTRADOR')
+    return res.status(404).send ({mensaje: 'Solo el administrador puede editar los productos'});
+    
+    if (parametros._id != null)
+    return res.status(500).send({ mensaje: 'No se puede editar el id'});
+    
+
+    if (parametros.cantidad != null)
+    return res.status(500).send({ mensaje: 'La cantidad la puede modificar desde el control de stock'});
+    
+
+    if (parametros.cantidadVendida != null)
+    return res.status(500).send({ mensaje: 'La cantidad vendida no puede ser editada'});
+    
+
+    Producto.find({nombre: parametros.nombre}, (err, productoEncontrado)=>{
+        if (productoEncontrado.length == 0){
+
+            if(parametros.categoria != null){
+                Categoria.find({_id: parametros.idCategoria}, (err, categoriaEncontrada)=>{
+                    if (categoriaEncontrada.length != 0){
+                        Producto.findByIdAndUpdate(idProd, parametros, {new : true},(err, productoActualizado)=>{
+                            if(err) return res.status(500).send({ mensaje: 'Error en la peticion' });
+                            if(!productoActualizado) return res.status(500).send({ mensaje: 'Error al editar el producto'});
+                            
+                            return res.status(200).send({producto : productoActualizado})
+                        })
+                    }else{
+                        if(err) return res.status(500).send({mensaje: 'Ocurrio un error'})
+                        return res.status(500).send({mensaje:'Este ID no pertenece a ninguna categoria existente, intente con otro'});
+                    }
+                })
+            }else{
+                Producto.findByIdAndUpdate(idProd, parametros, {new : true},(err, productoActualizado)=>{
+                    if(err) return res.status(500).send({ mensaje: 'Error, asegurese de que el ID pertenezca a una categoria existente' });
+                    if(!productoActualizado) return res.status(500).send({ mensaje: 'Error al editar el producto'});
+                    
+                    return res.status(200).send({producto : productoActualizado})
+                })
+            }
+        }else{
+            return res.status(500).send({mensaje:'Este nombre de producto ya existe, intente con otro'});
+        }
+    })
+}
 
 /* CONTROLAR EL STOCK DE UN PRODUCTO */
 function stockProducto(req, res){
@@ -89,13 +138,30 @@ function stockProducto(req, res){
     if(req.user.rol != 'ROL_ADMINISTRADOR')
     return res.status(404).send ({mensaje: 'Solo el administrador puede controlar el stock de los productos'});
 
-    Producto.findByIdAndUpdate(productoId, { $inc :{ cantidad: parametros.cantidad } }, {new: true},
-    (err, productoModificado)=>{
-        if(err) return res.status(500).send({mensaje: "Error en la peticion"});
-        if(!productoModificado) return res.status(500).send({mensaje: "Error al editar la cantidad del Producto"});
+    if (parametros.cantidad < 0){
+        var CantidadNegativa = parametros.cantidad * -1;
 
-        return res.status(200).send({producto: productoModificado})
-    })
+        Producto.findById(productoId, (err, productoEncontrado)=>{ 
+            if (productoEncontrado.cantidad  < CantidadNegativa )
+            return res.status(500).send({mensaje: 'No hay sufiente stock como para eliminar esa cantidad. Cantidad actual: '+productoEncontrado.cantidad})
+            
+            ultimaCantidad = CantidadNegativa * -1;
+            Producto.findByIdAndUpdate(productoId, { $inc :{ cantidad: ultimaCantidad } }, {new: true}, (err, productoModificado)=>{
+                if(err) return res.status(500).send({mensaje: "Error en la peticion"});
+                if(!productoModificado) return res.status(500).send({mensaje: "Error al editar la cantidad del Producto"});
+        
+                return res.status(200).send({producto: productoModificado})
+            })
+  
+        })
+    }else{
+        Producto.findByIdAndUpdate(productoId, { $inc :{ cantidad: parametros.cantidad } }, {new: true}, (err, productoModificado)=>{
+            if(err) return res.status(500).send({mensaje: "Error en la peticion"});
+            if(!productoModificado) return res.status(500).send({mensaje: "Error al editar la cantidad del Producto"});
+    
+            return res.status(200).send({producto: productoModificado})
+        })
+    }
 }
 
 
@@ -103,5 +169,6 @@ module.exports = {
     agregarProducto,
     obtenerProductoId,
     visualizarProductos,
+    editarProducto,
     stockProducto
 }
