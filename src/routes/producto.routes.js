@@ -10,5 +10,8 @@ api.get('/obtenerProductos', md_autenticacion.Auth, productoControlador.visualiz
 api.put('/editarProducto/:idProducto', md_autenticacion.Auth, productoControlador.editarProducto);
 api.put('/stockProducto/:idProducto', md_autenticacion.Auth , productoControlador.stockProducto);
 
+api.get('/buscarProducto/:nombreProducto', md_autenticacion.Auth, productoControlador.buscarProductoNombre);
+api.get('/buscarProductoCategoria/:nombreCategoria', md_autenticacion.Auth, productoControlador.mostrarProductoPorCategoria);
+api.get('/catalogoMasVendidos', md_autenticacion.Auth, productoControlador.productosMasVendidos);
 
 module.exports = api;

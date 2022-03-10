@@ -10,4 +10,9 @@ api.put('/editarRolUsuario/:idUsuario', md_autenticacion.Auth, usuarioControlado
 api.put('/editarUsuario/:idUsuario', md_autenticacion.Auth, usuarioControlador.editarUsuario);
 api.delete('/eliminarUsuario/:idUsuario', md_autenticacion.Auth, usuarioControlador.eliminarUsuario);
 
+api.put('/agregarProductoCarrito', md_autenticacion.Auth, usuarioControlador.agregarProductoCarrito);
+api.delete('/eliminarProductoCarrito', md_autenticacion.Auth, usuarioControlador.eliminarProductoCarrito)
+api.put('/crearFactura', md_autenticacion.Auth, usuarioControlador.carritoAFactura);
+
+
 module.exports = api;
