@@ -1,6 +1,7 @@
 const Usuarios = require('../models/usuario.model');
 const Producto = require('../models/producto.model');
 const Factura = require('../models/factura.model');
+const facturaControlador = require('../controllers/factura.controller');
 
 const bcrypt = require('bcrypt-nodejs')
 const jwt = require('../services/jwt');
@@ -117,13 +118,6 @@ function editarRolUsuario (req, res){
         if(!usuarioRolActualizado) return res.status(404).send({mensaje: "Ocurrio un error o no tiene permitido modificar el rol de este usuario."});
 
         return res.status(200).send({usuario: usuarioRolActualizado});
-
-/*
-        Usuarios.findByIdAndUpdate(req.user.sub, {$set:{carrito: []}, totalCarrito: 0}, {new:true},
-            (err, carritoVacio)=>{
-                if(err) return res.status(500).send({mensaje: 'Error en la peticion'});
-                if(!carritoVacio) res.status(404).send({mensaje: 'Error al vaciar el carrito y el total del carrito del cliente'});
-            })*/
     })
 }
 
@@ -405,23 +399,36 @@ function carritoAFactura(req, res){
 
     var parametros = req.body;
     var facturaModel = new Factura();
+    var IdUsuario = req.user.sub;
 
     Usuarios.findById(req.user.sub, (err, usuarioEncontrado)=>{
-        if(err) return res.status(500).send({mensaje: 'No se pudo encontrar un usuario'});
+        if(err) return res.status(500).send({mensaje: 'Error en la peticion'});
+        if(!usuarioEncontrado) return res.status(500).send({mensaje: 'No se pudo encontrar un usuario'});
 
         if(parametros.nit){
             facturaModel.nit = parametros.nit;
+            facturaModel.nombre = usuarioEncontrado.nombre;
             facturaModel.listaProductos = usuarioEncontrado.carrito;
             facturaModel.idUsuario = usuarioEncontrado._id;
             facturaModel.totalFactura = usuarioEncontrado.totalCarrito;
         
 
-        facturaModel.save((err, facturaCreada)=>{
-            if(err) return res.status(500).send({mensaje: 'Erro en la peticion'});
-            if(!facturaCreada) return res.status(404).send({mensaje: 'No se pudo crear la factura'});
+            facturaModel.save((err, facturaCreada)=>{
+                if(err) return res.status(500).send({mensaje: 'Erro en la peticion'});
+                if(!facturaCreada) return res.status(404).send({mensaje: 'No se pudo crear la factura'});
 
+                Factura.findOne({_id: facturaCreada._id},{"_id":1,"nit":1,"listaProductos":1,"nombre": 1, "totalFactura":1},(err, facturaEncontrada)=>{
+                    if(err) return res.status(500).send({ mensaje: "Error en la peticion" });
+                    if(!facturaEncontrada) return res.status(500).send({ mensaje: "Error al obtener la factura"});
+        
+                    facturaControlador.crearPDF(IdUsuario, facturaEncontrada);
+                })
+
+                
             return res.status(200).send({factura: facturaCreada});
+            
         })
+
 
         for (let i = 0; i < usuarioEncontrado.carrito.length; i++) {
             Producto.findOneAndUpdate({nombre: usuarioEncontrado.carrito[i].nombreProducto},

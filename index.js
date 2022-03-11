@@ -6,7 +6,7 @@ mongoose.Promise = global.Promise;
 const usuarioControlador = require('./src/controllers/usuario.controller');
 const categoriaControlador = require('./src/controllers/categoria.controller');
 
-mongoose.connect('mongodb://localhost:27017/IN6BM4', {useNewUrlParser: true, useUnifiedTopology:true}).then(()=>{
+mongoose.connect('mongodb://localhost:27017/IN6BM', {useNewUrlParser: true, useUnifiedTopology:true}).then(()=>{
     console.log("Se encuentra conectado a la base de datos.");
 
     app.listen(3000, function(){

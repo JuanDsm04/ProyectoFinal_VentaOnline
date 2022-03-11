@@ -106,10 +106,144 @@ function mostrarComprasRealizadas(req, res){
     })
 }
 
+
+//PDF DE FACTURA AL CONFIRMARLA
+function crearPDF(idFac, facturaEncontrada) { 
+    const fs = require('fs');
+
+    const Pdfmake = require('pdfmake');
+
+    var fonts = {
+        Roboto: {
+            normal: './fonts/roboto/Roboto-Regular.ttf',
+            bold: './fonts/roboto/Roboto-Medium.ttf',
+            italics: './fonts/roboto/Roboto-Italic.ttf',
+            bolditalics: './fonts/roboto/Roboto-MediumItalic.ttf'
+        }
+    };
+
+    let pdfmake = new Pdfmake(fonts);
+
+    let content = [{
+        text: "FACTURA",
+        fontSize: 43,
+        color: '#1A5276',
+        bold: true,
+    }]
+
+    content.push({
+        text: '   ',
+        fontSize: 15,
+        bold: true,
+    })
+
+    content.push({
+        text: '====================================================================',
+        color: '#1A5276',
+    })
+
+    content.push({
+        text: 'ID: '+facturaEncontrada._id +"\n",
+        fontSize: 15,
+        bold: true,
+    })
+
+    content.push({
+        text: 'Nombre: ' +facturaEncontrada.nombre +"\n",
+        fontSize: 15,
+        bold: true,
+    })
+
+    content.push({
+        text: 'NIT: '+facturaEncontrada.nit +"\n",
+        fontSize: 15,
+        bold: true,
+    })
+
+    content.push({
+        text: '====================================================================' +"\n" +"\n",
+        color: '#1A5276',
+    })
+
+    content.push({
+        text: '---------------------------------------------------------------------------------------------------------------------------------------',
+        color: '#1A5276',
+    })
+
+    for(let i = 0; i < facturaEncontrada.listaProductos.length; i++){
+        var nombre = 'Nombre: '+facturaEncontrada.listaProductos[i].nombreProducto;
+        var cantidad = 'Cantidad: '+facturaEncontrada.listaProductos[i].cantidadComprada;
+        var precioUnitario = 'Precio Unitario: Q'+facturaEncontrada.listaProductos[i].precioUnitario;
+        var subtotal = 'Subtotal: Q'+facturaEncontrada.listaProductos[i].subtotal;
+
+        content.push({
+            text: nombre
+        })
+
+        content.push({
+            text: cantidad
+        })
+
+        content.push({
+            text: precioUnitario
+        })
+
+        content.push({
+            text: subtotal,
+            alignment: 'right'
+        })
+
+        content.push({
+            text: '---------------------------------------------------------------------------------------------------------------------------------------',
+            color: '#1A5276',
+        })
+    }
+
+    content.push({
+        text: 'TOTAL: Q'+facturaEncontrada.totalFactura,
+        color: '#1A5276',
+        bold: true,
+        fontSize: 14,
+        alignment: 'right'
+    })
+    
+    let footerPdf = {
+        
+        background: function () {
+            return {
+                canvas: [
+                    {
+                        color: '#1A5276',
+                        type: 'rect',
+                        x: 0, y: 0, w: 595, h: 45
+                        
+                    },
+                    {
+                        color: '#AED6F1',
+                        type: 'rect',
+                        x: 0, y: 20, w: 595, h: 80
+                        
+                    }
+                ]
+            };
+        },
+
+        content: content,
+        pageMargins: [72, 41, 72, 60],
+    }
+
+    pdfDoc = pdfmake.createPdfKitDocument(footerPdf, {});
+    pdfDoc.pipe(fs.createWriteStream('pdfs/factura-'+facturaEncontrada._id+'.pdf'));
+    pdfDoc.end();
+}
+
+
+
 module.exports = {
     mostrarFacturasUsuarios,
     mostrarProductoFactura,
     mostrarProductosAgotados,
     mostrarProductosMasVendidos,
-    mostrarComprasRealizadas
+    mostrarComprasRealizadas,
+    crearPDF
 }

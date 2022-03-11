@@ -10,7 +10,6 @@ api.get('/productosAgotados', md_autenticacion.Auth, facturaControlador.mostrarP
 api.get('/productosMasVendidos', md_autenticacion.Auth, facturaControlador.mostrarProductosMasVendidos);
 api.get('/comprasRealizadas/:idUsuario', md_autenticacion.Auth, facturaControlador.mostrarComprasRealizadas);
 
-
-//api.get('/crearPDF/:idFactura', md_autenticacion.Auth, facturaControlador.crearPDF);
+api.get('/crearPDF/:idFactura', md_autenticacion.Auth, facturaControlador.crearPDF);
 
 module.exports = api;

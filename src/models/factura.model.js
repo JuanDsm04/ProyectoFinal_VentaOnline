@@ -3,6 +3,7 @@ var Schema = mongoose.Schema;
 
 const FacturasSchema = Schema({
     nit: String,
+    nombre:String,
     idUsuario: {type: Schema.Types.ObjectId, ref: 'usuarios'},
     listaProductos: [{
         nombreProducto: String,
