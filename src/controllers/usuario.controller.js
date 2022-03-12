@@ -367,7 +367,6 @@ function eliminarProductoCarrito(req, res){
 
                     for (let i=0; i < usuarioEncontrado.carrito.length; i++){
                         totalCarritoLocal = totalCarritoLocal + usuarioEncontrado.carrito[i].subtotal;
-                        console.log(totalCarritoLocal)
                     }
 
                     Usuarios.findByIdAndUpdate(usuarioLogueado, {totalCarrito: totalCarritoLocal}, {new:true},
